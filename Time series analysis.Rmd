@@ -1,0 +1,88 @@
+---
+title: "Time series analysis on the pattern and trend of global occean temperature "
+author: "yaoxinyi"
+date: "4/7/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r}
+library(astsa)
+plot.ts(gtemp_ocean, main="Plot of gtemp_ocean")
+plot.ts(diff(gtemp_ocean),main="Plot of diff(gtemp_ocean)")
+acf2(diff(gtemp_ocean))
+
+```
+
+```{r}
+sarima(gtemp_ocean,1,1,2)
+```
+
+```{r}
+sarima(gtemp_ocean,2,1,0)
+```
+
+```{r}
+forecast<-sarima.for(gtemp_ocean,10,2,1,0)
+title(main="Plot of forecasting global ocean temperature for next 10 years")
+year<-c(1:10)
+upperlimit<-forecast$pred+qnorm(0.975)*forecast$se
+lowerlimit<-forecast$pred-qnorm(0.975)*forecast$se
+data.frame("Prediction"=forecast$pred,"Lower limit for 95% PI"=lowerlimit,"Upper limit for 95% PI"=upperlimit)
+
+```
+
+```{r}
+ocean_spec=mvspec(gtemp_ocean,log="no")
+title(main="Peridogram of gtemp_ocean")
+P<-ocean_spec$details[order(ocean_spec$details[,3],decreasing=TRUE),]
+P[1,3]
+P[2,3]
+P[3,3]
+U = qchisq(0.025,2)
+L = qchisq(0.975,2)
+ocean_L1=2*P[1,3]/L
+ocean_U1=2*P[1,3]/U
+ocean_L2=2*P[2,3]/L
+ocean_U2=2*P[2,3]/U
+ocean_L3=2*P[3,3]/L
+ocean_U3=2*P[3,3]/U
+
+R<-data.frame("period"=1/P[1,1],"frequency" = P[1,1], "spectrum" = P[1,3], "lower for 95% CI"=ocean_L1, "upper for 95% CI" =ocean_U1)
+S<-data.frame("period"=1/P[2,1],"frequency" = P[2,1], "spectrum" = P[2,3], "lower for 95% CI"=ocean_L2, "upper for 95% CI" =ocean_U2)
+V<-data.frame("period"=1/P[3,1],"frequency" = P[3,1], "spectrum" = P[3,3], "lower for 95% CI"=ocean_L3, "upper for 95% CI" =ocean_U3)
+rbind(R,S,V)
+```
+
+
+```{r}
+max(Mod(2*fft(gtemp_ocean)/138)^2)
+
+
+```
+Statistical methods: Seen from the plot of gtemp_ocean, the series of  global ocean temperature is going upward with small flucutations since 1990, which is not stationary, To make it stationary, I take the difference of it as seen in the plot of diff(gtemp_ocean). Seen from the acf and pacf of gtemp_ocean, I notice the ACF is cutting off at lag =2. So I suggest that gtemp_ocean may follow ARIMA (0,1,2) model. Rather than focusing on one model, it appears that PACF is cutting off at lag = 2. I also suggests gtemp_ocean may follow ARIMA (2,0,1) model. Hence, I proposed two models and fit these models on data as a preliminary analysis. 
+I aim to estimate the parameters and conduct significance testing by fitting ARIMA (0,1,2) model and ARIMA (2,1,0) model on data repectively. In terms of ARIMA (0,1,2) model, the estimate of ma1 -0.1204 and the corresponding p-value is 0.1056. The p-value is larger then than the chosen significance level =0.05 and thus ma 1 is not statistically significant. It illustrates that . 
+
+After fitting the ARIMA (0,1,2) and ARIMA (2,1,0) model on data repsectively, seen from diagnostics of ARIMA (0,1,2) model and ARIMA(2,1,0) model respectively,  
+
+Results: 
+
+
+
+
+
+
+
+
+Since 1990, affected by global warming, the global ocean temperature has been rising. When people begin to pay attention to this problem, reasonable control of human activities can effectively reduce the global ocean temperature rise. Through effective regulation, the global ocean temperature decreased from 2016 to 2017. It is estimated that from 2018 to 2028, the global ocean temperature will only rise by 0.08 degrees Celsius, and the rising rate and amplitude will be greatly reduced compared with previous years.
+
+Discussion:
+
+If we do not take measures to curb the trend of global warming timely, the rising ocean temperature may bring typhoon, tsunami and other serious marine disasters. In order to avoid these global disasters and protect survival of living beings, many countries in the world are trying to take measures to curb the trend of global warming. For example, the Pairs agreement was signed by nearly 200 countries aimming to control the trend of rising global temperature . This project is aimed to predict the future global ocean temperature trend and investigate the effect of these control measures on the global ocean temperature change, further helping to improve the current regulations and decide the optimal measures. 
+
+
+
+
+
+
